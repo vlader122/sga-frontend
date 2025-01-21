@@ -27,9 +27,7 @@ export class AppMenu {
             {
                 label: 'UI Components',
                 items: [
-                    { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', routerLink: ['/uikit/formlayout'] },
                     { label: 'Categorias', icon: 'pi pi-fw pi-id-card', routerLink: ['/categorias'] },
-
                 ]
             },
         ];

@@ -1,6 +1,7 @@
+<p-toast />
 <p-toolbar styleClass="mb-6">
     <ng-template #start>
-        <p-button label="Agregar" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
+        <p-button label="Agregar" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="abridModal()" />
     </ng-template>
 
     <ng-template #end>
@@ -10,7 +11,7 @@
 
 <p-table
     #dt
-    [value]="categorias"
+    [value]="categorias()"
     [rows]="10"
     [columns]="cols"
     [paginator]="true"
@@ -45,68 +46,28 @@
             <td style="min-width: 12rem">{{ categoria.id }}</td>
             <td style="min-width: 12rem">{{ categoria.descripcion }}</td>
             <td>
-                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" />
-                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" />
+                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="actualizar(categoria)"/>
+                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (onClick)="eliminarCategoria(categoria)"/>
             </td>
         </tr>
     </ng-template>
 </p-table>
 
-<p-dialog [style]="{ width: '450px' }" header="Product Details" [modal]="true">
+<p-dialog [(visible)]="categoriaDialog" [style]="{ width: '450px' }" [header]="accion + ' ' + 'Categoria'" [modal]="true">
     <ng-template #content>
-        <div class="flex flex-col gap-6">
-            <div>
-                <label for="name" class="block font-bold mb-3">Name</label>
-                <input type="text" pInputText id="name"  required autofocus fluid />
-            </div>
-            <div>
-                <label for="description" class="block font-bold mb-3">Description</label>
-                <textarea id="description" pTextarea required rows="3" cols="20" fluid></textarea>
-            </div>
-
-            <div>
-                <label for="inventoryStatus" class="block font-bold mb-3">Inventory Status</label>
-                <p-select inputId="inventoryStatus" [options]="statuses" optionLabel="label" optionValue="label" placeholder="Select a Status" fluid />
-            </div>
-
-            <div>
-                <span class="block font-bold mb-4">Category</span>
-                <div class="grid grid-cols-12 gap-4">
-                    <div class="flex items-center gap-2 col-span-6">
-                        <p-radiobutton id="category1" name="category" value="Accessories" />
-                        <label for="category1">Accessories</label>
-                    </div>
-                    <div class="flex items-center gap-2 col-span-6">
-                        <p-radiobutton id="category2" name="category" value="Clothing" />
-                        <label for="category2">Clothing</label>
-                    </div>
-                    <div class="flex items-center gap-2 col-span-6">
-                        <p-radiobutton id="category3" name="category" value="Electronics" />
-                        <label for="category3">Electronics</label>
-                    </div>
-                    <div class="flex items-center gap-2 col-span-6">
-                        <p-radiobutton id="category4" name="category" value="Fitness" />
-                        <label for="category4">Fitness</label>
-                    </div>
+        <form [formGroup]="formulario">
+            <div class="flex flex-col gap-6">
+                <div>
+                    <label for="descripcion" class="block font-bold mb-3">Descripcion</label>
+                    <input type="text" pInputText id="descripcion" formControlName="descripcion" required fluid />
                 </div>
             </div>
-
-            <div class="grid grid-cols-12 gap-4">
-                <div class="col-span-6">
-                    <label for="price" class="block font-bold mb-3">Price</label>
-                    <p-inputnumber id="price" mode="currency" currency="USD" locale="en-US" fluid />
-                </div>
-                <div class="col-span-6">
-                    <label for="quantity" class="block font-bold mb-3">Quantity</label>
-                    <p-inputnumber id="quantity" fluid />
-                </div>
-            </div>
-        </div>
+        </form>
     </ng-template>
 
     <ng-template #footer>
-        <p-button label="Cancel" icon="pi pi-times" text (click)="hideDialog()" />
-        <p-button label="Save" icon="pi pi-check" />
+        <p-button label="Cancelar" icon="pi pi-times" (click)="hideDialog()" />
+        <p-button label="Guardar" icon="pi pi-check" (click)="guardar()" />
     </ng-template>
 </p-dialog>
 

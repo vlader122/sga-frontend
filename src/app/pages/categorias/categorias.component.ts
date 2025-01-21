@@ -14,7 +14,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RippleModule } from 'primeng/ripple';
 import { ToastModule } from 'primeng/toast';
 import { InputTextModule } from 'primeng/inputtext';
@@ -53,10 +53,11 @@ interface ExportColumn {
     TagModule,
     InputIconModule,
     IconFieldModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    ReactiveFormsModule
   ],
   templateUrl: './categorias.component.html',
-  providers:[MessageService, ConfirmationService]
+  providers:[MessageService, CategoriaService, ConfirmationService]
 })
 export class CategoriasComponent implements OnInit{
     categoriaDialog: boolean = false;
@@ -73,6 +74,10 @@ export class CategoriasComponent implements OnInit{
 
     @ViewChild('dt') dt!: Table;
 
+    formulario: FormGroup;
+
+    accion: string= "";
+
     exportColumns!: ExportColumn[];
 
     cols!: Column[];
@@ -81,37 +86,24 @@ export class CategoriasComponent implements OnInit{
         private categoriaService: CategoriaService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
-    ) {}
+    ) {
+        this.formulario = new FormGroup({
+            descripcion: new FormControl('',[Validators.required])
+        });
+    }
 
     exportCSV() {
         this.dt.exportCSV();
     }
 
     ngOnInit() {
-        this.loadDemoData();
+        this.fcategorias();
     }
 
-    loadDemoData() {
+    fcategorias() {
         this.categoriaService.obtenerCategorias().subscribe( dato =>{
-            console.log(dato.content);
-            this.categorias = dato.content;
-            console.log(this.categorias);
-
+            this.categorias.set(dato.content);
         })
-
-        this.statuses = [
-            { label: 'INSTOCK', value: 'instock' },
-            { label: 'LOWSTOCK', value: 'lowstock' },
-            { label: 'OUTOFSTOCK', value: 'outofstock' }
-        ];
-
-        this.cols = [
-            { field: 'code', header: 'Code', customExportHeader: 'Categoria Code' },
-            { field: 'name', header: 'Name' },
-            { field: 'image', header: 'Image' },
-            { field: 'price', header: 'Price' },
-            { field: 'category', header: 'Category' }
-        ];
 
         this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
     }
@@ -120,7 +112,8 @@ export class CategoriasComponent implements OnInit{
         table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
     }
 
-    openNew() {
+    abridModal() {
+        this.accion = "Añadir"
         this.submitted = false;
         this.categoriaDialog = true;
     }
@@ -130,36 +123,27 @@ export class CategoriasComponent implements OnInit{
         this.categoriaDialog = true;
     }
 
-    deleteSelectedCategorias() {
-        this.confirmationService.confirm({
-            message: 'Are you sure you want to delete the selected categorias?',
-            header: 'Confirm',
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => {
-                this.categorias.set(this.categorias().filter((val) => !this.selectedCategorias?.includes(val)));
-                this.selectedCategorias = null;
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Categorias Deleted',
-                    life: 3000
-                });
-            }
-        });
-    }
-
     hideDialog() {
         this.categoriaDialog = false;
         this.submitted = false;
+        this.formulario.reset();
     }
 
-    deleteCategoria(categoria: Categoria) {
+    eliminarCategoria(categoria: Categoria) {
+        console.log(categoria);
+
         this.confirmationService.confirm({
-            message: 'Are you sure you want to delete ' + categoria.descripcion + '?',
-            header: 'Confirm',
+            message: 'Esta seguro de eliminar ' + categoria.descripcion + '?',
+            header: 'Confirmacion',
             icon: 'pi pi-exclamation-triangle',
+            acceptButtonProps: {
+                label: 'Eliminar',
+                severity: 'danger',
+            },
             accept: () => {
-                this.categorias.set(this.categorias().filter((val) => val.id !== categoria.id));
+                this.categoriaService.eliminarCategoria(categoria.id).subscribe( dato=>{
+                    this.fcategorias();
+                })
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Successful',
@@ -170,67 +154,34 @@ export class CategoriasComponent implements OnInit{
         });
     }
 
-/*     findIndexById(id: string): number {
-        let index = -1;
-        for (let i = 0; i < this.categorias().length; i++) {
-            if (this.categorias()[i].id === id) {
-                index = i;
-                break;
-            }
-        }
-
-        return index;
-    } */
-
-    createId(): string {
-        let id = '';
-        var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        for (var i = 0; i < 5; i++) {
-            id += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return id;
-    }
-
-    getSeverity(status: string) {
-        switch (status) {
-            case 'INSTOCK':
-                return 'success';
-            case 'LOWSTOCK':
-                return 'warn';
-            case 'OUTOFSTOCK':
-                return 'danger';
-            default:
-                return 'info';
-        }
-    }
-
-/*     saveCategoria() {
+    guardar() {
         this.submitted = true;
-        let _categorias = this.categorias();
-        if (this.categoria.name?.trim()) {
-            if (this.categoria.id) {
-                _categorias[this.findIndexById(this.categoria.id)] = this.categoria;
-                this.categorias.set([..._categorias]);
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Categoria Updated',
-                    life: 3000
-                });
-            } else {
-                this.categoria.id = this.createId();
-                this.categoria.image = 'categoria-placeholder.svg';
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Categoria Created',
-                    life: 3000
-                });
-                this.categorias.set([..._categorias, this.categoria]);
-            }
+        if(this.accion == "Actualizar"){
+            this.categoria.descripcion = this.formulario.value.descripcion;
+            this.categoriaService.editarCategoria(this.categoria).subscribe(dato=>{
+                this.fcategorias();
+            })
+        } else{
+            this.categoria = new Categoria;
 
-            this.categoriaDialog = false;
-            this.categoria = {};
+            this.categoria.descripcion = this.formulario.value.descripcion;
+
+            this.categoriaService.guardarCategoria(this.categoria).subscribe( dato =>{
+                this.fcategorias();
+            })
         }
-    } */
+
+        this.messageService.add({ severity: 'success', summary: 'Correcto', detail: 'Guardado exitoso', life: 2000 });
+        this.categoriaDialog = false;
+        this.formulario.reset();
+    }
+
+    actualizar(categoria: Categoria){
+        this.accion = "Actualizar";
+        this.submitted = false;
+        this.categoriaDialog = true;
+        this.categoria = categoria;
+        this.formulario.get('descripcion')?.setValue(categoria.descripcion);
+
+    }
 }

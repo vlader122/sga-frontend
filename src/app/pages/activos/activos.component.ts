@@ -1,4 +1,5 @@
-import { Categoria } from './../../models/Categoria';
+import { CategoriaService } from './../../services/categoria.service';
+import { Activo } from './../../models/Activo';
 import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { Table, TableModule } from 'primeng/table';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -19,7 +20,8 @@ import { RippleModule } from 'primeng/ripple';
 import { ToastModule } from 'primeng/toast';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
-import { CategoriaService } from '../../services/categoria.service';
+import { ActivoService } from '../../services/activo.service';
+import { Categoria } from '../../models/Categoria';
 
 interface Column {
     field: string;
@@ -33,7 +35,7 @@ interface ExportColumn {
 }
 
 @Component({
-  selector: 'app-categorias',
+  selector: 'app-activos',
   standalone: true,
   imports: [
     CommonModule,
@@ -56,19 +58,21 @@ interface ExportColumn {
     ConfirmDialogModule,
     ReactiveFormsModule
   ],
-  templateUrl: './categorias.component.html',
-  providers:[MessageService, CategoriaService, ConfirmationService]
+  templateUrl: './activos.component.html',
+  providers:[MessageService, ActivoService, ConfirmationService]
 })
-export class CategoriasComponent implements OnInit{
-    categoriaDialog: boolean = false;
+export class ActivosComponent implements OnInit{
+    activoDialog: boolean = false;
 
-    categorias = signal<Categoria[]>([]);
+    activos = signal<Activo[]>([]);
+    categorias: Categoria[] =[];
+
 
     totalRegistros: number = 0;
 
-    categoria!: Categoria;
+    activo!: Activo;
 
-    selectedCategorias!: Categoria[] | null;
+    selectedActivos!: Activo[] | null;
 
     submitted: boolean = false;
 
@@ -85,12 +89,20 @@ export class CategoriasComponent implements OnInit{
     cols!: Column[];
 
     constructor(
+        private activoService: ActivoService,
         private categoriaService: CategoriaService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
     ) {
         this.formulario = new FormGroup({
-            descripcion: new FormControl('',[Validators.required])
+            descripcion: new FormControl('',[Validators.required]),
+            codigoInventario: new FormControl('',[Validators.required]),
+            nombre: new FormControl('',[Validators.required]),
+            categoria: new FormControl('',[Validators.required]),
+            marca: new FormControl('',[Validators.required]),
+            modelo: new FormControl('',[Validators.required]),
+            serie: new FormControl('',[Validators.required]),
+            estadoAsignacion: new FormControl('',[Validators.required]),
         });
     }
 
@@ -100,13 +112,18 @@ export class CategoriasComponent implements OnInit{
 
     ngOnInit() {
         this.fcategorias();
+        this.factivos();
     }
 
-    fcategorias() {
+    fcategorias(){
         this.categoriaService.obtenerCategorias().subscribe( dato =>{
-            this.categoriaService.obtenerCategorias(dato.totalElements).subscribe( dato =>{
-                this.categorias.set(dato.content);
-            })
+            this.categorias = dato.content;
+        })
+    }
+
+    factivos() {
+        this.activoService.obtenerActivos().subscribe( dato =>{
+                this.activos.set(dato.content);
         })
 
         this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
@@ -119,25 +136,25 @@ export class CategoriasComponent implements OnInit{
     abridModal() {
         this.accion = "Añadir"
         this.submitted = false;
-        this.categoriaDialog = true;
+        this.activoDialog = true;
     }
 
-    editCategoria(categoria: Categoria) {
-        this.categoria = { ...categoria };
-        this.categoriaDialog = true;
+    editActivo(activo: Activo) {
+        this.activo = { ...activo };
+        this.activoDialog = true;
     }
 
     hideDialog() {
-        this.categoriaDialog = false;
+        this.activoDialog = false;
         this.submitted = false;
         this.formulario.reset();
     }
 
-    eliminarCategoria(categoria: Categoria) {
-        console.log(categoria);
+    eliminarActivo(activo: Activo) {
+        console.log(activo);
 
         this.confirmationService.confirm({
-            message: 'Esta seguro de eliminar ' + categoria.descripcion + '?',
+            message: 'Esta seguro de eliminar ' + activo.descripcion + '?',
             header: 'Confirmacion',
             icon: 'pi pi-exclamation-triangle',
             acceptButtonProps: {
@@ -145,13 +162,13 @@ export class CategoriasComponent implements OnInit{
                 severity: 'danger',
             },
             accept: () => {
-                this.categoriaService.eliminarCategoria(categoria.id).subscribe( dato=>{
-                    this.fcategorias();
+                this.activoService.eliminarActivo(activo.id).subscribe( dato=>{
+                    this.factivos();
                 })
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Successful',
-                    detail: 'Categoria Deleted',
+                    detail: 'Activo Deleted',
                     life: 3000
                 });
             }
@@ -159,33 +176,42 @@ export class CategoriasComponent implements OnInit{
     }
 
     guardar() {
+        console.log(this.formulario.value);
+
         this.submitted = true;
         if(this.accion == "Actualizar"){
-            this.categoria.descripcion = this.formulario.value.descripcion;
-            this.categoriaService.editarCategoria(this.categoria).subscribe(dato=>{
-                this.fcategorias();
+            this.activo.descripcion = this.formulario.value.descripcion;
+            this.activoService.editarActivo(this.activo).subscribe(dato=>{
+                this.factivos();
             })
         } else{
-            this.categoria = new Categoria;
+            this.activo = new Activo;
 
-            this.categoria.descripcion = this.formulario.value.descripcion;
+            this.activo.codigoInventario = this.formulario.value.codigoInventario;
+            this.activo.nombre = this.formulario.value.nombre;
+            this.activo.idcategoria = this.formulario.value.categoria.id;
+            this.activo.marca = this.formulario.value.marca;
+            this.activo.modelo = this.formulario.value.modelo;
+            this.activo.serie = this.formulario.value.serie;
+            this.activo.descripcion = this.formulario.value.descripcion;
+            this.activo.estadoAsignacion = this.formulario.value.estadoAsignacion;
 
-            this.categoriaService.guardarCategoria(this.categoria).subscribe( dato =>{
-                this.fcategorias();
+            this.activoService.guardarActivo(this.activo).subscribe( dato =>{
+                this.factivos();
             })
         }
 
         this.messageService.add({ severity: 'success', summary: 'Correcto', detail: 'Guardado exitoso', life: 2000 });
-        this.categoriaDialog = false;
+        this.activoDialog = false;
         this.formulario.reset();
     }
 
-    actualizar(categoria: Categoria){
+    actualizar(activo: Activo){
         this.accion = "Actualizar";
         this.submitted = false;
-        this.categoriaDialog = true;
-        this.categoria = categoria;
-        this.formulario.get('descripcion')?.setValue(categoria.descripcion);
+        this.activoDialog = true;
+        this.activo = activo;
+        this.formulario.get('descripcion')?.setValue(activo.descripcion);
 
     }
 }

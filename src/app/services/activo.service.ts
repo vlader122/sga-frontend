@@ -6,11 +6,11 @@ import { environment } from '../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
-export class CategoriaService {
-    ruta = `${environment.rutaBackend}/api/v1/categorias`;
+export class ActivoService {
+    ruta = `${environment.rutaBackend}/api/v1/activos`;
     constructor(private httpCliente: HttpClient) { }
 
-    obtenerCategorias(size?:number): Observable<any> {
+    obtenerActivos(size?:number): Observable<any> {
         if(!size){
             size=0
         }
@@ -18,15 +18,15 @@ export class CategoriaService {
         return this.httpCliente.get<any>(this.ruta + '?size='+size);
     }
 
-    guardarCategoria(categoria: any): Observable<any> {
-        return this.httpCliente.post<any>(this.ruta, categoria);
+    guardarActivo(activo: any): Observable<any> {
+        return this.httpCliente.post<any>(this.ruta, activo);
     }
 
-    eliminarCategoria(id: number):Observable<any>{
+    eliminarActivo(id: number):Observable<any>{
         return this.httpCliente.delete<any>(this.ruta + '/' + id);
     }
 
-    editarCategoria(categoria: any): Observable<any>{
-        return this.httpCliente.put<any>(this.ruta,categoria);
+    editarActivo(activo: any): Observable<any>{
+        return this.httpCliente.put<any>(this.ruta,activo);
     }
 }

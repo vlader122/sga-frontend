@@ -1,0 +1,142 @@
+<p-toast />
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="Agregar" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="abridModal()" />
+    </ng-template>
+
+    <ng-template #end>
+        <p-button label="Exportar CSV" icon="pi pi-upload" severity="secondary" (onClick)="exportCSV()" />
+    </ng-template>
+</p-toolbar>
+
+<p-table
+    #dt
+    [value]="activos()"
+    [rows]="10"
+    [columns]="cols"
+    [paginator]="true"
+    [tableStyle]="{ 'min-width': '75rem' }"
+    [rowHover]="true"
+    dataKey="id"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 20, 30]"
+>
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">Administrar Activos</h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." />
+            </p-iconfield>
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th style="min-width: 16rem">Id</th>
+            <th pSortableColumn="name" style="min-width:16rem">
+                Codigo Inventario
+            </th>
+            <th pSortableColumn="name" style="min-width:16rem">
+                Descripcion
+            </th>
+            <th pSortableColumn="name" style="min-width:16rem">
+                Estado
+            </th>
+            <th pSortableColumn="name" style="min-width:16rem">
+                Categoria
+            </th>
+            <th pSortableColumn="name" style="min-width:16rem">
+                Marca
+            </th>
+            <th pSortableColumn="name" style="min-width:16rem">
+                Modelo
+            </th>
+            <th pSortableColumn="name" style="min-width:16rem">
+                Nombre
+            </th>
+            <th pSortableColumn="name" style="min-width:16rem">
+                Serie
+            </th>
+            <th pSortableColumn="inventoryStatus" style="min-width: 12rem">
+                Operaciones
+            </th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-activo>
+        <tr>
+            <td style="min-width: 12rem">{{ activo.id }}</td>
+            <td style="min-width: 12rem">{{ activo.codigoInventario }}</td>
+            <td style="min-width: 12rem">{{ activo.descripcion }}</td>
+            <td style="min-width: 12rem">{{ activo.estadoAsignacion }}</td>
+            <td style="min-width: 12rem">{{ activo.categoria?.descripcion }}</td>
+            <td style="min-width: 12rem">{{ activo.marca }}</td>
+            <td style="min-width: 12rem">{{ activo.modelo }}</td>
+            <td style="min-width: 12rem">{{ activo.nombre }}</td>
+            <td style="min-width: 12rem">{{ activo.serie }}</td>
+            <td>
+                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="actualizar(activo)"/>
+                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (onClick)="eliminarActivo(activo)"/>
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<p-dialog [(visible)]="activoDialog" [style]="{ width: '450px' }" [header]="accion + ' ' + 'Activo'" [modal]="true">
+    <ng-template #content>
+        <form [formGroup]="formulario">
+            <div class="flex flex-col gap-6">
+                <div>
+                    <label for="descripcion" class="block font-bold mb-3">codigoInventario</label>
+                    <input type="text" pInputText id="descripcion" formControlName="codigoInventario" required fluid />
+                </div>
+            </div>
+            <div class="flex flex-col gap-6">
+                <div>
+                    <label for="descripcion" class="block font-bold mb-3">Descripcion</label>
+                    <input type="text" pInputText id="descripcion" formControlName="descripcion" required fluid />
+                </div>
+            </div>
+            <div class="flex flex-col gap-6">
+                <div>
+                    <label for="descripcion" class="block font-bold mb-3">estadoAsignacion</label>
+                    <input type="text" pInputText id="descripcion" formControlName="estadoAsignacion" required fluid />
+                </div>
+            </div>
+            <div class="flex flex-col gap-6">
+                <div class="font-semibold text-xl">Categoria</div>
+                <p-select formControlName="categoria" optionLabel="descripcion" [options]="categorias" placeholder="Select" />
+            </div>
+            <div class="flex flex-col gap-6">
+                <div>
+                    <label for="descripcion" class="block font-bold mb-3">marca</label>
+                    <input type="text" pInputText id="descripcion" formControlName="marca" required fluid />
+                </div>
+            </div>
+            <div class="flex flex-col gap-6">
+                <div>
+                    <label for="descripcion" class="block font-bold mb-3">modelo</label>
+                    <input type="text" pInputText id="descripcion" formControlName="modelo" required fluid />
+                </div>
+            </div>
+            <div class="flex flex-col gap-6">
+                <div>
+                    <label for="descripcion" class="block font-bold mb-3">nombre</label>
+                    <input type="text" pInputText id="descripcion" formControlName="nombre" required fluid />
+                </div>
+            </div>
+            <div class="flex flex-col gap-6">
+                <div>
+                    <label for="descripcion" class="block font-bold mb-3">serie</label>
+                    <input type="text" pInputText id="descripcion" formControlName="serie" required fluid />
+                </div>
+            </div>
+        </form>
+    </ng-template>
+
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" (click)="hideDialog()" />
+        <p-button label="Guardar" icon="pi pi-check" (click)="guardar()" />
+    </ng-template>
+</p-dialog>
+
+<p-confirmdialog [style]="{ width: '450px' }" />

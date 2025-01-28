@@ -8,6 +8,7 @@ import { Landing } from './app/pages/landing/landing';
 import { Notfound } from './app/pages/notfound/notfound';
 import { AccesorGuard } from './app/config/accesor.guard';
 import { LoginComponent } from './app/login/login.component';
+import { AsignacionesComponent } from './app/pages/asignaciones/asignaciones.component';
 
 export const appRoutes: Routes = [
 
@@ -24,6 +25,10 @@ export const appRoutes: Routes = [
             {
                 path: 'activos',
                 component: ActivosComponent
+            },
+            {
+                path: 'asignaciones',
+                component: AsignacionesComponent
             }
         ],
         canActivate: [AccesorGuard]

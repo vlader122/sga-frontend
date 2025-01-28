@@ -1,0 +1,145 @@
+<p-toast />
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="Agregar" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="abridModal()" />
+    </ng-template>
+
+    <ng-template #end>
+        <p-button label="Exportar CSV" icon="pi pi-upload" severity="secondary" (onClick)="exportCSV()" />
+    </ng-template>
+</p-toolbar>
+
+<p-table
+    #dt
+    [value]="asignaciones()"
+    [rows]="10"
+    [columns]="cols"
+    [paginator]="true"
+    [tableStyle]="{ 'min-width': '75rem' }"
+    [rowHover]="true"
+    dataKey="id"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 20, 30]"
+>
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">Administrar Asignaciones</h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." />
+            </p-iconfield>
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th style="min-width: 16rem">Id</th>
+            <th pSortableColumn="name" style="min-width:16rem">
+                Fecha Asignacion
+            </th>
+            <th pSortableColumn="name" style="min-width:16rem">
+                Usuario
+            </th>
+            <th pSortableColumn="name" style="min-width:16rem">
+                Persona
+            </th>
+            <th pSortableColumn="name" style="min-width:16rem">
+                Observacion
+            </th>
+            <th pSortableColumn="inventoryStatus" style="min-width: 12rem">
+                Operaciones
+            </th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-asignacion>
+        <tr>
+            <td style="min-width: 12rem">{{ asignacion.id }}</td>
+            <td style="min-width: 12rem">{{ asignacion.fechaAsignacion }}</td>
+            <td style="min-width: 12rem">{{ asignacion.usuario.usuario }}</td>
+            <td style="min-width: 12rem">{{ asignacion.persona.nombre + ' ' + asignacion.persona.apellido}}</td>
+            <td style="min-width: 12rem">{{ asignacion.observacion }}</td>
+            <td>
+                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="actualizar(asignacion)"/>            </td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<p-dialog [(visible)]="asignacionDialog" [style]="{ width: '650px' }" [header]="accion + ' ' + 'Asignacion'" [modal]="true">
+    <ng-template #content>
+        <form [formGroup]="formulario">
+            <div class="flex flex-col gap-8">
+                <div>
+                    <label for="fechaAsignacion" class="block font-bold mb-3">Fecha Asignacion</label>
+                    <p-datepicker [showIcon]="true" [showButtonBar]="true" formControlName="fechaAsignacion"></p-datepicker>
+                </div>
+                <div>
+                    <label for="idpersona" class="block font-bold mb-3">Persona</label>
+                    <p-select formControlName="idpersona" optionLabel="nombreCompleto" [options]="personas" placeholder="Select" />
+                </div>
+                <div>
+                    <label for="idpersona" class="block font-bold mb-3">Activos</label>
+                    <p-select formControlName="activo" optionLabel="descripcion" [options]="activos" placeholder="Select" (onChange)="agregar()"/>
+                </div>
+                <p-table
+                #dt
+                [rows]="10"
+                [columns]="cols"
+                [paginator]="true"
+                [tableStyle]="{ 'min-width': '75rem' }"
+                [rowHover]="true"
+                dataKey="id"
+                [showCurrentPageReport]="true"
+                [rowsPerPageOptions]="[10, 20, 30]">
+                    <ng-template #caption>
+                        <div class="flex items-center justify-between">
+                            <h5 class="m-0">Lista de Activos</h5>
+                        </div>
+                    </ng-template>
+                    <ng-template #header>
+                        <tr>
+                            <th>Id</th>
+                            <th pSortableColumn="name" style="min-width:16rem">
+                                Codigo Inventario
+                            </th>
+                            <th pSortableColumn="name" style="min-width:16rem">
+                                Descripcion
+                            </th>
+                            <th pSortableColumn="name" style="min-width:16rem">
+                                Nombre
+                            </th>
+                            <th pSortableColumn="name" style="min-width:16rem">
+                                Serie
+                            </th>
+                            <th pSortableColumn="inventoryStatus" style="min-width: 12rem">
+                                Operaciones
+                            </th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-activo>
+                        <tr>
+                            <td style="min-width: 6rem">{{ activo.id }}</td>
+                            <td style="min-width: 12rem">{{ activo.codigoInventario }}</td>
+                            <td style="min-width: 12rem">{{ activo.descripcion }}</td>
+                            <td style="min-width: 12rem">{{ activo.nombre }}</td>
+                            <td style="min-width: 12rem">{{ activo.serie }}</td>
+                            <td>
+                                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="actualizar(activo)"/>
+                                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" />
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+                <div>
+                    <label for="observacion" class="block font-bold mb-3">Observacion</label>
+                    <input type="text" pInputText id="observacion" formControlName="observacion" required fluid />
+                </div>
+            </div>
+        </form>
+    </ng-template>
+
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" (click)="hideDialog()" />
+        <p-button label="Guardar" icon="pi pi-check" (click)="guardar()" />
+    </ng-template>
+</p-dialog>
+
+<p-confirmdialog [style]="{ width: '450px' }" />

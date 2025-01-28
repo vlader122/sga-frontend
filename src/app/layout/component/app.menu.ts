@@ -28,7 +28,8 @@ export class AppMenu {
                 label: 'UI Components',
                 items: [
                     { label: 'Categorias', icon: 'pi pi-fw pi-id-card', routerLink: ['/categorias'] },
-                    { label: 'Activos', icon: 'pi pi-fw pi-home', routerLink: ['/activos'] }
+                    { label: 'Activos', icon: 'pi pi-fw pi-home', routerLink: ['/activos'] },
+                    { label: 'Asignaciones', icon: 'pi pi-fw pi-file', routerLink: ['/asignaciones'] },
                 ]
             },
         ];

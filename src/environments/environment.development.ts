@@ -1,5 +1,5 @@
 export const environment = {
     app: 'SGA',
-    rutaBackend: 'http://localhost:8080',
+    rutaBackend: 'https://sga-backend-production.up.railway.app',
     token: 'token'
 };

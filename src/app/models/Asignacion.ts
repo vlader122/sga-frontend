@@ -1,10 +1,12 @@
+import { DetalleAsignacion } from "./DetalleAsignacion";
+
 export class Asignacion {
     id!: number;
     fechaAsignacion!: Date;
     idusuario!: number;
     idpersona!: number;
     observacion!: string;
-
+    detalleAsignacion!: any[];
     constructor(
         fechaAsignacion: Date = new Date,
         idusuario: number = 0,

@@ -1,5 +1,4 @@
 import { ActivoService } from './../../services/activo.service';
-import { CategoriaService } from '../../services/categoria.service';
 import { Asignacion } from '../../models/Asignacion';
 import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { Table, TableModule } from 'primeng/table';
@@ -26,6 +25,9 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { Persona } from '../../models/Persona';
 import { PersonaService } from '../../services/persona.service';
 import { Activo } from '../../models/Activo';
+import { DetalleAsignacion } from '../../models/DetalleAsignacion';
+import { environment } from '../../../environments/environment';
+import { AuthService } from '../../services/auth.service';
 
 interface Column {
     field: string;
@@ -70,6 +72,8 @@ export class AsignacionesComponent implements OnInit{
     asignacionDialog: boolean = false;
 
     asignaciones = signal<Asignacion[]>([]);
+    detalleAsignaciones: DetalleAsignacion[] = [];
+
     personas: Persona[] =[];
     activos: Activo[] =[];
 
@@ -98,6 +102,7 @@ export class AsignacionesComponent implements OnInit{
         private personaService: PersonaService,
         private activoService: ActivoService,
         private messageService: MessageService,
+        private auth: AuthService,
         private confirmationService: ConfirmationService
     ) {
         this.formulario = new FormGroup({
@@ -201,17 +206,27 @@ export class AsignacionesComponent implements OnInit{
         } else{
             this.asignacion = new Asignacion;
 
+            const token = this.auth.getToken();
+            const base64Url = token.split('.')[1];  // El payload está en la segunda parte del token
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');  // Asegúrate de que esté en el formato correcto
+            const decodedToken = JSON.parse(atob(base64));
             this.asignacion.fechaAsignacion = this.formulario.value.fechaAsignacion;
-            this.asignacion.idusuario = this.formulario.value.idusuario;
-            this.asignacion.idpersona = this.formulario.value.idpersona;
+            this.asignacion.idusuario = decodedToken.sub;
+            this.asignacion.idpersona = this.formulario.value.idpersona.id;
             this.asignacion.observacion = this.formulario.value.observacion;
-            this.asignacionService.guardarAsignacion(this.asignacion).subscribe( dato =>{
+            
+            this.asignacion.detalleAsignacion = this.detalleAsignaciones.map(item => ({
+                idactivo: item.id,
+                estado: 0
+              }));
+             this.asignacionService.guardarAsignacion(this.asignacion).subscribe( dato =>{
                 this.fasignaciones();
             })
         }
 
         this.messageService.add({ severity: 'success', summary: 'Correcto', detail: 'Guardado exitoso', life: 2000 });
         this.asignacionDialog = false;
+        this.detalleAsignaciones = [];
         this.formulario.reset();
     }
 
@@ -223,6 +238,6 @@ export class AsignacionesComponent implements OnInit{
     }
 
     agregar(){
-        console.log(this.formulario.value.activo);
+        this.detalleAsignaciones.push(this.formulario.value.activo);
     }
 }
